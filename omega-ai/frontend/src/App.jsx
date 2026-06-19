@@ -1,75 +1,70 @@
-import { useState, useEffect, useRef } from 'react';
-import ChatPanel from './components/ChatPanel';
+import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
-import ModelSelector from './components/ModelSelector';
+import ChatPanel from './components/ChatPanel';
 import FileExplorer from './components/FileExplorer';
 import TerminalPanel from './components/TerminalPanel';
+import MemoryPanel from './components/MemoryPanel';
+import SettingsPanel from './components/SettingsPanel';
 import HelpPage from './pages/HelpPage';
 import './App.css';
 
 function App() {
-  const [messages, setMessages] = useState([]);
-  const [selectedModels, setSelectedModels] = useState(['qwen3-coder', 'deepseek-v3']);
-  const [autoSelect, setAutoSelect] = useState(true);
-  const [activeTab, setActiveTab] = useState('chat');
-  const [files, setFiles] = useState([]);
-  const [terminalOutput, setTerminalOutput] = useState([]);
+  const [currentPage, setCurrentPage] = useState('chat');
+  const [showHelp, setShowHelp] = useState(false);
+
+  // Handle F1 key for help
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'F1') {
+        e.preventDefault();
+        setShowHelp(true);
+      }
+      if (e.key === 'Escape' && showHelp) {
+        setShowHelp(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showHelp]);
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'chat':
+        return <ChatPanel />;
+      case 'files':
+        return <FileExplorer />;
+      case 'terminal':
+        return <TerminalPanel />;
+      case 'memory':
+        return <MemoryPanel />;
+      case 'settings':
+        return <SettingsPanel />;
+      default:
+        return <ChatPanel />;
+    }
+  };
 
   return (
     <div className="app-container">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar 
+        currentPage={currentPage} 
+        setCurrentPage={setCurrentPage}
+        onOpenHelp={() => setShowHelp(true)}
+      />
       
-      <div className="main-content">
-        <header className="app-header">
-          <div className="header-title">
-            <img src="/assets/logo.svg" alt="Omega AI" className="header-logo" />
-            <h1>Omega AI Desktop</h1>
-          </div>
-          <ModelSelector 
-            selectedModels={selectedModels}
-            setSelectedModels={setSelectedModels}
-            autoSelect={autoSelect}
-            setAutoSelect={setAutoSelect}
-          />
-        </header>
+      <main className="main-content">
+        {renderPage()}
+      </main>
 
-        <div className="content-area">
-          {activeTab === 'chat' && (
-            <ChatPanel 
-              messages={messages}
-              setMessages={setMessages}
-              selectedModels={selectedModels}
-              autoSelect={autoSelect}
-            />
-          )}
-          
-          {activeTab === 'files' && (
-            <FileExplorer files={files} setFiles={setFiles} />
-          )}
-          
-          {activeTab === 'terminal' && (
-            <TerminalPanel output={terminalOutput} setOutput={setTerminalOutput} />
-          )}
-          
-          {activeTab === 'help' && (
-            <HelpPage />
-          )}
-          
-          {activeTab === 'memory' && (
-            <div className="placeholder-page">
-              <h2>🧠 Memory System</h2>
-              <p>Conversation history and context will appear here.</p>
-            </div>
-          )}
-          
-          {activeTab === 'settings' && (
-            <div className="placeholder-page">
-              <h2>⚙️ Settings</h2>
-              <p>Configure API keys and application preferences.</p>
-            </div>
-          )}
+      {showHelp && (
+        <div className="modal-overlay" onClick={() => setShowHelp(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowHelp(false)}>×</button>
+            <HelpPage onClose={() => setShowHelp(false)} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
