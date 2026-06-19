@@ -1,78 +1,41 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import path from 'path';
-
-import chatRoutes from './routes/chat.js';
-import modelsRoutes from './routes/models.js';
-import filesRoutes from './routes/files.js';
-import terminalRoutes from './routes/terminal.js';
-import memoryRoutes from './routes/memory.js';
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const path = require('path');
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-
-// Request logging
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  next();
-});
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Routes
-app.use('/api/chat', chatRoutes);
-app.use('/api/models', modelsRoutes);
-app.use('/api/files', filesRoutes);
-app.use('/api/terminal', terminalRoutes);
-app.use('/api/memory', memoryRoutes);
+const aiRouter = require('./routes/ai');
+const fileRouter = require('./routes/files');
+const terminalRouter = require('./routes/terminal');
+const memoryRouter = require('./routes/memory');
+
+app.use('/api/ai', aiRouter);
+app.use('/api/files', fileRouter);
+app.use('/api/terminal', terminalRouter);
+app.use('/api/memory', memoryRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    version: '1.0.0'
-  });
+  res.json({ status: 'ok', message: 'Omega AI Backend is running' });
 });
 
-// Error handling middleware
+// Error handling
 app.use((err, req, res, next) => {
-  console.error('Error:', err.message);
-  res.status(500).json({ 
-    error: err.message || 'Internal server error' 
-  });
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
 });
 
-// Start server
 app.listen(PORT, () => {
-  console.log(`
-╔════════════════════════════════════════════════╗
-║           🚀 Omega AI Backend Ready            ║
-╠════════════════════════════════════════════════╣
-║  Server running on: http://localhost:${PORT}     ║
-║  Environment: ${process.env.NODE_ENV || 'development'}                       ║
-║                                                ║
-║  Available Models:                             ║
-║  • Qwen3 Coder      (Coding specialist)        ║
-║  • DeepSeek V3      (Debugging expert)         ║
-║  • Kimi K2          (Architecture design)      ║
-║  • Llama 4          (General purpose)          ║
-║  • Gemma 3          (Fast responses)           ║
-║  • Mistral Small    (Quick tasks)              ║
-║  • CodeLlama        (Code generation)          ║
-║  • StarCoder2       (Code completion)          ║
-╚════════════════════════════════════════════════╝
-  `);
+  console.log(`🚀 Omega AI Backend running on port ${PORT}`);
+  console.log(`📡 Available models: Qwen3-Coder, DeepSeek-V3, Kimi K2, Llama 4, Gemma 3, Mistral Small`);
 });
-
-export default app;

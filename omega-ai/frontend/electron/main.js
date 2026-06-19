@@ -7,18 +7,23 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
+    minWidth: 1024,
+    minHeight: 768,
+    icon: path.join(__dirname, '../assets/logo.png'),
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false,
-      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: false
     },
-    icon: path.join(__dirname, '../public/icon.png'),
-    title: 'Omega AI Desktop',
+    frame: true,
+    titleBarStyle: 'default',
+    backgroundColor: '#1a1a2e'
   });
 
-  // Load the app
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:3000');
+  // Load from Vite dev server in development or built files in production
+  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+  
+  if (isDev) {
+    mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
@@ -45,23 +50,25 @@ app.on('window-all-closed', () => {
   }
 });
 
-// IPC handlers for frontend-backend communication
-ipcMain.handle('send-to-backend', async (event, data) => {
-  const axios = require('axios');
-  try {
-    const response = await axios.post('http://localhost:5000/api/chat', data);
-    return response.data;
-  } catch (error) {
-    return { error: error.message };
+// IPC handlers for Electron-React communication
+ipcMain.handle('get-platform', () => {
+  return process.platform;
+});
+
+ipcMain.handle('minimize-window', () => {
+  if (mainWindow) mainWindow.minimize();
+});
+
+ipcMain.handle('maximize-window', () => {
+  if (mainWindow) {
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
   }
 });
 
-ipcMain.handle('get-models', async () => {
-  const axios = require('axios');
-  try {
-    const response = await axios.get('http://localhost:5000/api/models');
-    return response.data;
-  } catch (error) {
-    return { error: error.message };
-  }
+ipcMain.handle('close-window', () => {
+  if (mainWindow) mainWindow.close();
 });

@@ -1,185 +1,174 @@
-import express from 'express';
-
+const express = require('express');
 const router = express.Router();
+const Database = require('better-sqlite3');
+const path = require('path');
 
-// In-memory conversation memory (can be replaced with MongoDB/SQLite)
-let conversations = new Map();
-let globalMemory = [];
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, '../database/omega-memory.db');
 
-// POST /api/memory/save - Save conversation to memory
-router.post('/save', (req, res) => {
+// Initialize database
+let db;
+try {
+  db = new Database(DB_PATH);
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS conversations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      conversation_id INTEGER,
+      role TEXT,
+      content TEXT,
+      model TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (conversation_id) REFERENCES conversations(id)
+    )
+  `);
+  
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS documents (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT,
+      content TEXT,
+      embedding TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+} catch (error) {
+  console.error('Database initialization failed:', error.message);
+}
+
+// Get all conversations
+router.get('/conversations', (req, res) => {
   try {
-    const { conversationId, messages, context } = req.body;
-
-    if (!conversationId) {
-      return res.status(400).json({ error: 'Conversation ID is required' });
-    }
-
-    const existing = conversations.get(conversationId) || {
-      id: conversationId,
-      messages: [],
-      contexts: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (messages) {
-      existing.messages.push(...messages);
-    }
-
-    if (context) {
-      existing.contexts.push({
-        ...context,
-        timestamp: new Date().toISOString(),
-      });
-    }
-
-    existing.updatedAt = new Date().toISOString();
-    conversations.set(conversationId, existing);
-
-    res.json({
-      success: true,
-      conversationId,
-      messageCount: existing.messages.length,
-    });
+    if (!db) return res.status(500).json({ error: 'Database not initialized' });
+    
+    const conversations = db.prepare('SELECT * FROM conversations ORDER BY updated_at DESC').all();
+    res.json(conversations);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// GET /api/memory/get/:conversationId - Get conversation memory
-router.get('/get/:conversationId', (req, res) => {
+// Create new conversation
+router.post('/conversations', (req, res) => {
   try {
-    const { conversationId } = req.params;
-    const conversation = conversations.get(conversationId);
+    if (!db) return res.status(500).json({ error: 'Database not initialized' });
+    
+    const { title } = req.body;
+    const result = db.prepare('INSERT INTO conversations (title) VALUES (?)').run(title || 'New Conversation');
+    
+    res.json({ id: result.lastInsertRowid, title: title || 'New Conversation' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-    if (!conversation) {
-      return res.json({
-        success: true,
-        conversation: null,
-        message: 'No conversation found',
-      });
+// Get conversation messages
+router.get('/conversations/:id', (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'Database not initialized' });
+    
+    const messages = db.prepare(`
+      SELECT * FROM messages 
+      WHERE conversation_id = ? 
+      ORDER BY created_at ASC
+    `).all(req.params.id);
+    
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add message to conversation
+router.post('/messages', (req, res) => {
+  try {
+    if (!db) return res.status(500).json({ error: 'Database not initialized' });
+    
+    const { conversation_id, role, content, model } = req.body;
+    
+    if (!conversation_id || !role || !content) {
+      return res.status(400).json({ error: 'Conversation ID, role, and content are required' });
     }
 
-    res.json({
-      success: true,
-      conversation,
-    });
+    const result = db.prepare(`
+      INSERT INTO messages (conversation_id, role, content, model) 
+      VALUES (?, ?, ?, ?)
+    `).run(conversation_id, role, content, model || 'auto');
+
+    // Update conversation timestamp
+    db.prepare('UPDATE conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(conversation_id);
+    
+    res.json({ id: result.lastInsertRowid });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// GET /api/memory/list - List all conversations
-router.get('/list', (req, res) => {
+// Delete conversation
+router.delete('/conversations/:id', (req, res) => {
   try {
-    const allConversations = Array.from(conversations.values()).sort(
-      (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-    );
-
-    res.json({
-      success: true,
-      count: allConversations.length,
-      conversations: allConversations.map(c => ({
-        id: c.id,
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt,
-        messageCount: c.messages.length,
-      })),
-    });
+    if (!db) return res.status(500).json({ error: 'Database not initialized' });
+    
+    db.prepare('DELETE FROM messages WHERE conversation_id = ?').run(req.params.id);
+    db.prepare('DELETE FROM conversations WHERE id = ?').run(req.params.id);
+    
+    res.json({ success: true });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// DELETE /api/memory/clear/:conversationId - Clear conversation memory
-router.delete('/clear/:conversationId', (req, res) => {
+// Search documents (RAG)
+router.get('/search', (req, res) => {
   try {
-    const { conversationId } = req.params;
-    conversations.delete(conversationId);
-
-    res.json({
-      success: true,
-      message: 'Conversation cleared',
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-});
-
-// POST /api/memory/global - Add to global memory
-router.post('/global', (req, res) => {
-  try {
-    const { content, type, tags } = req.body;
-
-    if (!content) {
-      return res.status(400).json({ error: 'Content is required' });
+    if (!db) return res.status(500).json({ error: 'Database not initialized' });
+    
+    const { query } = req.query;
+    
+    if (!query) {
+      return res.status(400).json({ error: 'Query is required' });
     }
 
-    globalMemory.push({
-      id: Date.now(),
-      content,
-      type: type || 'note',
-      tags: tags || [],
-      timestamp: new Date().toISOString(),
-    });
-
-    // Keep only last 100 items
-    if (globalMemory.length > 100) {
-      globalMemory = globalMemory.slice(-100);
-    }
-
-    res.json({
-      success: true,
-      id: globalMemory[globalMemory.length - 1].id,
-    });
+    // Simple text search (in production, use vector embeddings)
+    const results = db.prepare(`
+      SELECT * FROM documents 
+      WHERE content LIKE ? OR title LIKE ?
+      LIMIT 10
+    `).all(`%${query}%`, `%${query}%`);
+    
+    res.json(results);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// GET /api/memory/global - Get global memory
-router.get('/global', (req, res) => {
+// Add document to RAG store
+router.post('/documents', (req, res) => {
   try {
-    const { search } = req.query;
-
-    let results = globalMemory;
-
-    if (search) {
-      const searchLower = search.toLowerCase();
-      results = globalMemory.filter(
-        item =>
-          item.content.toLowerCase().includes(searchLower) ||
-          item.tags.some(tag => tag.toLowerCase().includes(searchLower))
-      );
+    if (!db) return res.status(500).json({ error: 'Database not initialized' });
+    
+    const { title, content } = req.body;
+    
+    if (!title || !content) {
+      return res.status(400).json({ error: 'Title and content are required' });
     }
 
-    res.json({
-      success: true,
-      count: results.length,
-      memory: results,
-    });
+    const result = db.prepare(`
+      INSERT INTO documents (title, content) 
+      VALUES (?, ?)
+    `).run(title, content);
+    
+    res.json({ id: result.lastInsertRowid });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-export default router;
+module.exports = router;

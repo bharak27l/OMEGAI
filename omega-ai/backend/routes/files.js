@@ -1,159 +1,130 @@
-import express from 'express';
-import fs from 'fs/promises';
-import path from 'path';
-
+const express = require('express');
 const router = express.Router();
+const fs = require('fs').promises;
+const path = require('path');
 
-// GET /api/files/list - List files in directory
+const WORKSPACE_DIR = process.env.WORKSPACE_DIR || '/tmp/omega-workspace';
+
+// Ensure workspace directory exists
+router.use(async (req, res, next) => {
+  try {
+    await fs.mkdir(WORKSPACE_DIR, { recursive: true });
+    next();
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create workspace directory' });
+  }
+});
+
+// List files in directory
 router.get('/list', async (req, res) => {
   try {
-    const { dir } = req.query;
-    const targetDir = dir || process.cwd();
-
-    const items = await fs.readdir(targetDir, { withFileTypes: true });
+    const dirPath = req.query.path ? path.join(WORKSPACE_DIR, req.query.path) : WORKSPACE_DIR;
+    const safePath = path.normalize(dirPath);
     
-    const files = await Promise.all(
-      items.map(async (item) => {
-        const stats = await fs.stat(path.join(targetDir, item.name));
-        return {
-          name: item.name,
-          path: path.join(targetDir, item.name),
-          isDirectory: item.isDirectory(),
-          size: stats.size,
-          modified: stats.mtime,
-          extension: path.extname(item.name),
-        };
-      })
-    );
+    if (!safePath.startsWith(WORKSPACE_DIR)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
-    res.json({
-      success: true,
-      directory: targetDir,
-      count: files.length,
-      files: files.sort((a, b) => {
-        // Directories first, then files
-        if (a.isDirectory && !b.isDirectory) return -1;
-        if (!a.isDirectory && b.isDirectory) return 1;
-        return a.name.localeCompare(b.name);
-      }),
-    });
+    const files = await fs.readdir(safePath, { withFileTypes: true });
+    const fileList = files.map(file => ({
+      name: file.name,
+      isDirectory: file.isDirectory(),
+      path: path.join(req.query.path || '', file.name)
+    }));
+
+    res.json(fileList);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// GET /api/files/read - Read file content
+// Read file content
 router.get('/read', async (req, res) => {
   try {
-    const { filePath } = req.query;
-
-    if (!filePath) {
-      return res.status(400).json({ error: 'File path is required' });
+    const filePath = path.join(WORKSPACE_DIR, req.query.path);
+    const safePath = path.normalize(filePath);
+    
+    if (!safePath.startsWith(WORKSPACE_DIR)) {
+      return res.status(403).json({ error: 'Access denied' });
     }
 
-    const content = await fs.readFile(filePath, 'utf-8');
-    const stats = await fs.stat(filePath);
-
-    res.json({
-      success: true,
-      path: filePath,
-      content,
-      size: stats.size,
-      modified: stats.mtime,
-      lines: content.split('\n').length,
-    });
+    const content = await fs.readFile(safePath, 'utf-8');
+    res.json({ content, path: req.query.path });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// POST /api/files/write - Write file content
+// Write file content
 router.post('/write', async (req, res) => {
   try {
-    const { filePath, content } = req.body;
-
+    const { path: filePath, content } = req.body;
+    
     if (!filePath || content === undefined) {
-      return res.status(400).json({ error: 'File path and content are required' });
+      return res.status(400).json({ error: 'Path and content are required' });
     }
 
-    await fs.writeFile(filePath, content, 'utf-8');
+    const fullPath = path.join(WORKSPACE_DIR, filePath);
+    const safePath = path.normalize(fullPath);
+    
+    if (!safePath.startsWith(WORKSPACE_DIR)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
-    res.json({
-      success: true,
-      path: filePath,
-      message: 'File written successfully',
-    });
+    await fs.mkdir(path.dirname(safePath), { recursive: true });
+    await fs.writeFile(safePath, content, 'utf-8');
+    
+    res.json({ success: true, path: filePath });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// POST /api/files/create - Create new file/directory
-router.post('/create', async (req, res) => {
+// Create directory
+router.post('/mkdir', async (req, res) => {
   try {
-    const { filePath, isDirectory = false } = req.body;
-
-    if (!filePath) {
-      return res.status(400).json({ error: 'File path is required' });
+    const { path: dirPath } = req.body;
+    
+    if (!dirPath) {
+      return res.status(400).json({ error: 'Path is required' });
     }
 
-    if (isDirectory) {
-      await fs.mkdir(filePath, { recursive: true });
-    } else {
-      await fs.writeFile(filePath, '', 'utf-8');
+    const fullPath = path.join(WORKSPACE_DIR, dirPath);
+    const safePath = path.normalize(fullPath);
+    
+    if (!safePath.startsWith(WORKSPACE_DIR)) {
+      return res.status(403).json({ error: 'Access denied' });
     }
 
-    res.json({
-      success: true,
-      path: filePath,
-      isDirectory,
-      message: `${isDirectory ? 'Directory' : 'File'} created successfully`,
-    });
+    await fs.mkdir(safePath, { recursive: true });
+    res.json({ success: true, path: dirPath });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// DELETE /api/files/delete - Delete file/directory
+// Delete file or directory
 router.delete('/delete', async (req, res) => {
   try {
-    const { filePath } = req.query;
-
-    if (!filePath) {
-      return res.status(400).json({ error: 'File path is required' });
+    const filePath = path.join(WORKSPACE_DIR, req.query.path);
+    const safePath = path.normalize(filePath);
+    
+    if (!safePath.startsWith(WORKSPACE_DIR)) {
+      return res.status(403).json({ error: 'Access denied' });
     }
 
-    const stats = await fs.stat(filePath);
-
+    const stats = await fs.stat(safePath);
+    
     if (stats.isDirectory()) {
-      await fs.rm(filePath, { recursive: true, force: true });
+      await fs.rm(safePath, { recursive: true, force: true });
     } else {
-      await fs.unlink(filePath);
+      await fs.unlink(safePath);
     }
-
-    res.json({
-      success: true,
-      path: filePath,
-      message: 'Deleted successfully',
-    });
+    
+    res.json({ success: true });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
-export default router;
+module.exports = router;

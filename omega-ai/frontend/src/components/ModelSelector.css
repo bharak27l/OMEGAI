@@ -1,149 +1,131 @@
 .model-selector {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.auto-select-toggle label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-  color: #aaa;
-  cursor: pointer;
-}
-
-.auto-select-toggle input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  accent-color: #e94560;
-}
-
-.selected-models {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.model-tag {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  background: rgba(233, 69, 96, 0.2);
-  border: 1px solid #e94560;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  color: #fff;
-}
-
-.model-tag button {
-  background: none;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  font-size: 1rem;
-  line-height: 1;
-  padding: 0;
-  opacity: 0.7;
-}
-
-.model-tag button:hover {
-  opacity: 1;
-}
-
-.model-dropdown {
   position: relative;
 }
 
-.add-model-btn {
-  padding: 6px 12px;
-  background: rgba(233, 69, 96, 0.2);
-  border: 1px solid #e94560;
-  border-radius: 6px;
-  color: #e94560;
+.model-select-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
+  font-size: 14px;
 }
 
-.add-model-btn:hover {
-  background: rgba(233, 69, 96, 0.3);
+.model-select-btn:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-primary);
 }
 
-.dropdown-content {
+.model-icon {
+  font-size: 18px;
+}
+
+.model-name {
+  font-weight: 500;
+}
+
+.dropdown-arrow {
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.model-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   right: 0;
-  margin-top: 8px;
-  width: 320px;
+  width: 340px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 100;
   max-height: 400px;
   overflow-y: auto;
-  background: #16213e;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
 }
 
-.dropdown-content h4 {
-  padding: 12px 15px;
-  margin: 0;
-  border-bottom: 1px solid #0f3460;
-  font-size: 0.95rem;
-  color: #fff;
+.dropdown-header {
+  padding: 16px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 8px 16px;
 }
 
 .model-option {
-  padding: 12px 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  text-align: left;
   cursor: pointer;
-  border-bottom: 1px solid rgba(15, 52, 96, 0.5);
-  transition: background 0.2s ease;
-}
-
-.model-option:last-child {
-  border-bottom: none;
+  transition: background 0.2s;
 }
 
 .model-option:hover {
-  background: rgba(233, 69, 96, 0.1);
+  background: var(--bg-tertiary);
 }
 
-.model-option.selected {
-  background: rgba(233, 69, 96, 0.2);
+.model-option.active {
+  background: rgba(233, 69, 96, 0.15);
+  border-left: 3px solid var(--accent-primary);
 }
 
-.model-info {
+.option-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.option-info {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.model-info strong {
-  color: #fff;
-  font-size: 0.9rem;
+.option-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
 }
 
-.provider {
-  font-size: 0.75rem;
-  color: #888;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 2px 6px;
-  border-radius: 4px;
+.option-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
-.model-stats {
+.option-stats {
   display: flex;
-  gap: 10px;
-  font-size: 0.75rem;
-  color: #aaa;
+  gap: 12px;
+  margin-top: 4px;
 }
 
-.specialty {
-  margin-left: auto;
-  background: rgba(233, 69, 96, 0.2);
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: #e94560;
+.stat {
+  font-size: 11px;
+}
+
+.stat.accuracy {
+  color: #ffc107;
+}
+
+.stat.speed {
+  color: var(--accent-secondary);
 }
