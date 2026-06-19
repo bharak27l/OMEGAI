@@ -13,7 +13,7 @@ function Sidebar({ activeTab, setActiveTab }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h2>Ω</h2>
+        <img src="/assets/logo.svg" alt="Omega AI" className="sidebar-logo" />
       </div>
       
       <nav className="sidebar-nav">
@@ -31,6 +31,14 @@ function Sidebar({ activeTab, setActiveTab }) {
       </nav>
 
       <div className="sidebar-footer">
+        <button
+          className="help-button"
+          onClick={() => setActiveTab('help')}
+          title="Help & Documentation"
+        >
+          <span className="nav-icon">❓</span>
+          <span className="nav-label">Help</span>
+        </button>
         <div className="status-indicator">
           <span className="status-dot online"></span>
           <span>Online</span>

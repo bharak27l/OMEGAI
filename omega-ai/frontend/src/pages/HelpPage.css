@@ -1,0 +1,323 @@
+.help-page {
+  display: flex;
+  height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+}
+
+.help-sidebar {
+  width: 280px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-y: auto;
+}
+
+.help-sidebar h2 {
+  font-size: 1.3rem;
+  margin-bottom: 25px;
+  color: #667eea;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.help-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: #b0b0b0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.help-nav-item:hover {
+  background: rgba(102, 126, 234, 0.15);
+  color: #fff;
+}
+
+.help-nav-item.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.help-nav-icon {
+  font-size: 1.2rem;
+}
+
+.help-content {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+.help-section h1 {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.help-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.help-card h3 {
+  color: #667eea;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+.help-card p {
+  color: #c0c0c0;
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+.help-card ol, .help-card ul {
+  color: #c0c0c0;
+  line-height: 1.8;
+  margin-left: 20px;
+}
+
+.help-card li {
+  margin-bottom: 8px;
+}
+
+.help-card code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-family: 'Courier New', monospace;
+  color: #f093fb;
+}
+
+.help-card a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.help-card a:hover {
+  text-decoration: underline;
+}
+
+.help-card.warning {
+  border-left: 4px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+/* Logo Showcase */
+.logo-showcase {
+  text-align: center;
+  padding: 40px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  margin-top: 30px;
+}
+
+.animated-logo {
+  width: 200px;
+  height: 200px;
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+
+.logo-caption {
+  margin-top: 20px;
+  font-size: 1.1rem;
+  color: #667eea;
+  font-weight: 500;
+}
+
+/* Models Grid */
+.models-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.model-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.model-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+}
+
+.model-card.premium {
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.model-card.fast {
+  border: 1px solid rgba(240, 147, 251, 0.3);
+  background: linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%);
+}
+
+.model-card h3 {
+  color: #fff;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.model-rating {
+  margin-bottom: 8px;
+}
+
+.model-speed {
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.model-card p {
+  color: #b0b0b0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+/* Features List */
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feature-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.feature-item h3 {
+  color: #667eea;
+  margin-bottom: 5px;
+  font-size: 1.1rem;
+}
+
+.feature-item p {
+  color: #b0b0b0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Shortcuts Table */
+.shortcuts-table {
+  display: grid;
+  gap: 12px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shortcut-row kbd {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  min-width: 120px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.shortcut-row span {
+  color: #c0c0c0;
+  font-size: 0.95rem;
+}
+
+/* Troubleshoot Items */
+.troubleshoot-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 15px;
+}
+
+.troubleshoot-item h3 {
+  color: #f59e0b;
+  margin-bottom: 10px;
+  font-size: 1.05rem;
+}
+
+.troubleshoot-item p {
+  color: #b0b0b0;
+  line-height: 1.6;
+}
+
+.troubleshoot-item code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-family: 'Courier New', monospace;
+  color: #f093fb;
+}
+
+/* Scrollbar Styling */
+.help-sidebar::-webkit-scrollbar,
+.help-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.help-sidebar::-webkit-scrollbar-track,
+.help-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.help-sidebar::-webkit-scrollbar-thumb,
+.help-content::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.5);
+  border-radius: 4px;
+}
+
+.help-sidebar::-webkit-scrollbar-thumb:hover,
+.help-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.7);
+}
