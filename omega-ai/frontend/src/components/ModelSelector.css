@@ -1,0 +1,149 @@
+.model-selector {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.auto-select-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.auto-select-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #e94560;
+}
+
+.selected-models {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.model-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: rgba(233, 69, 96, 0.2);
+  border: 1px solid #e94560;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.model-tag button {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  opacity: 0.7;
+}
+
+.model-tag button:hover {
+  opacity: 1;
+}
+
+.model-dropdown {
+  position: relative;
+}
+
+.add-model-btn {
+  padding: 6px 12px;
+  background: rgba(233, 69, 96, 0.2);
+  border: 1px solid #e94560;
+  border-radius: 6px;
+  color: #e94560;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.add-model-btn:hover {
+  background: rgba(233, 69, 96, 0.3);
+}
+
+.dropdown-content {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 320px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.dropdown-content h4 {
+  padding: 12px 15px;
+  margin: 0;
+  border-bottom: 1px solid #0f3460;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.model-option {
+  padding: 12px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(15, 52, 96, 0.5);
+  transition: background 0.2s ease;
+}
+
+.model-option:last-child {
+  border-bottom: none;
+}
+
+.model-option:hover {
+  background: rgba(233, 69, 96, 0.1);
+}
+
+.model-option.selected {
+  background: rgba(233, 69, 96, 0.2);
+}
+
+.model-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.model-info strong {
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.provider {
+  font-size: 0.75rem;
+  color: #888;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.model-stats {
+  display: flex;
+  gap: 10px;
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+.specialty {
+  margin-left: auto;
+  background: rgba(233, 69, 96, 0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #e94560;
+}

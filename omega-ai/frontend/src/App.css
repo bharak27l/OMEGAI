@@ -1,0 +1,36 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  background: rgba(22, 33, 62, 0.8);
+  border-bottom: 1px solid #0f3460;
+  backdrop-filter: blur(10px);
+}
+
+.app-header h1 {
+  font-size: 1.5rem;
+  background: linear-gradient(90deg, #e94560, #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.content-area {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}

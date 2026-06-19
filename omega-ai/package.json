@@ -1,0 +1,43 @@
+{
+  "name": "omega-ai-desktop",
+  "version": "1.0.0",
+  "description": "Ubuntu desktop AI coding application with multi-model architecture",
+  "main": "frontend/electron/main.js",
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "electron:dev": "cd frontend && npm run electron:dev",
+    "electron:build": "cd frontend && npm run electron:build",
+    "start": "electron ."
+  },
+  "keywords": [
+    "ai",
+    "coding",
+    "electron",
+    "multi-model",
+    "ubuntu"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1"
+  },
+  "build": {
+    "appId": "com.omega-ai.desktop",
+    "productName": "Omega AI Desktop",
+    "directories": {
+      "output": "dist"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Development"
+    }
+  }
+}
