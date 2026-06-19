@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import ModelSelector from './components/ModelSelector';
 import FileExplorer from './components/FileExplorer';
 import TerminalPanel from './components/TerminalPanel';
+import HelpPage from './pages/HelpPage';
 import './App.css';
 
 function App() {
@@ -20,7 +21,10 @@ function App() {
       
       <div className="main-content">
         <header className="app-header">
-          <h1>🚀 Omega AI Desktop</h1>
+          <div className="header-title">
+            <img src="/assets/logo.svg" alt="Omega AI" className="header-logo" />
+            <h1>Omega AI Desktop</h1>
+          </div>
           <ModelSelector 
             selectedModels={selectedModels}
             setSelectedModels={setSelectedModels}
@@ -45,6 +49,24 @@ function App() {
           
           {activeTab === 'terminal' && (
             <TerminalPanel output={terminalOutput} setOutput={setTerminalOutput} />
+          )}
+          
+          {activeTab === 'help' && (
+            <HelpPage />
+          )}
+          
+          {activeTab === 'memory' && (
+            <div className="placeholder-page">
+              <h2>🧠 Memory System</h2>
+              <p>Conversation history and context will appear here.</p>
+            </div>
+          )}
+          
+          {activeTab === 'settings' && (
+            <div className="placeholder-page">
+              <h2>⚙️ Settings</h2>
+              <p>Configure API keys and application preferences.</p>
+            </div>
           )}
         </div>
       </div>
